@@ -17,7 +17,7 @@ Runs on Mac, Windows and mobile from **one codebase**, synced through **one file
 4c. ✅ (2026-11-13, deployed a0ed4375) Add transactions by hand (Transactions → Add). A later import matches them (same account + amount, dates ≤ 5 days apart) and fills in the bank's details instead of adding a duplicate; undoing that import restores what you typed. Hand-typed ones can be edited/deleted. New Rules tab (Categories → Rules): search, edit, delete with Undo.
 5. **You (optional):** phone: open the live site → sign in → passphrase → Add to Home Screen.
 6. Phase 7: more banks when you add samples (CSV/Excel mapping too). Excel import needs SheetJS (install was blocked by the permission check; approve it then).
-7. Not done: nothing is committed to git yet (no commits on `master`).
+7. Git: first commit `bbcd8fb` on `master`; remote `origin` = https://github.com/IronFire15/expenses.git (empty). **Push not done:** this Mac isn't signed in to GitHub (`gh` not logged in, SSH key rejected). You: run `gh auth login` (GitHub.com → HTTPS → web browser), then `gh auth setup-git` and `git push -u origin master`.
 8. **Waiting on your choice: share with friends without typing their emails.** Each friend gets their own separate, encrypted data in their own Drive; nobody sees anyone else's.
    - **A (recommended, ~1 h):** a secret invite link (`/?invite=<code>`). Opening it lets any Google account sign in; the "invited" flag lives inside the encrypted session cookie (no database). Change the code to retire a leaked link; rotate `SESSION_SECRET` to sign everyone out. A new device needs the link again.
    - **B (~15 min):** open to any Google account (no allow-list). Strangers can use it too; no way to block one person.
@@ -27,7 +27,7 @@ Runs on Mac, Windows and mobile from **one codebase**, synced through **one file
 **Where things are:**
 - Your data (100 Moey transactions, Jan–Oct 2026, no August, all categorized) is in your Google Drive (encrypted sync file) and on every device that synced: the Claude app's browser pane and Firefox at `http://localhost:5173`, and Firefox on the live site (signed in 2026-11-13). A new device gets it by signing in and entering the passphrase.
 - Bank PDFs: `samples/` (git-ignored). `npm test` also checks every real sample parses and balances.
-- Nothing is committed to git yet.
+- Code: git `master` (local commits), remote `origin` on GitHub (not pushed yet, see item 7).
 
 **Commands:** `npm run dev` (http://localhost:5173) + `npm run dev:api` (sign-in service, needs `.dev.vars`) · `npm test` · `npm run build` · `npm run preview` (production build + real headers, :4173) · `npm run deploy` (build, upload, delete old uploads) · `./scripts/setup-signin.sh` (Google sign-in secrets; already done).
 
