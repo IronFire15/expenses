@@ -1,0 +1,213 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design tokens. Every color in the app comes from here (see DESIGN.md).
+ * Brand: teal. Neutrals: slightly cool gray. Money: income = positive (green);
+ * expenses use the normal text color (red is reserved for warnings like over-budget).
+ */
+:root {
+  --radius: 0.75rem;
+
+  --background: oklch(0.985 0.002 247);
+  --foreground: oklch(0.21 0.02 265);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+
+  /* teal-700: 5.5:1 contrast with white text (WCAG AA) */
+  --primary: oklch(0.511 0.086 186.4);
+  --primary-foreground: oklch(0.99 0 0);
+  --brand-soft: oklch(0.96 0.03 183);
+
+  --secondary: oklch(0.955 0.005 247);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.955 0.005 247);
+  --muted-foreground: oklch(0.5 0.02 257);
+  --accent: oklch(0.955 0.005 247);
+  --accent-foreground: var(--foreground);
+
+  --positive: oklch(0.52 0.14 152);
+  --negative: oklch(0.55 0.2 25);
+  --warning: oklch(0.65 0.15 70);
+  --destructive: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.92 0.006 255);
+  --input: oklch(0.9 0.006 255);
+  --ring: oklch(0.6 0.1 185);
+
+  --chart-1: oklch(0.6 0.1 185);
+  --chart-2: oklch(0.6 0.15 255);
+  --chart-3: oklch(0.75 0.15 75);
+  --chart-4: oklch(0.63 0.2 15);
+  --chart-5: oklch(0.58 0.18 300);
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--brand-soft);
+  --sidebar-accent-foreground: oklch(0.43 0.075 186);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  /* Chart colors: validated pair (dataviz skill validator, light vs #ffffff card). */
+  --viz-spend: #2a78d6;
+  --viz-income: #1baf7a; /* < 3:1 on white: charts always carry a legend + table view */
+  --viz-dim: oklch(0.88 0.008 255); /* de-emphasis for marks outside the selected period */
+  --viz-grid: oklch(0.93 0.005 255);
+  --viz-axis: oklch(0.82 0.008 255);
+
+  --shadow-card: 0 1px 2px oklch(0.2 0.02 265 / 5%), 0 1px 3px oklch(0.2 0.02 265 / 4%);
+  --shadow-card-hover: 0 4px 12px oklch(0.2 0.02 265 / 8%), 0 2px 4px oklch(0.2 0.02 265 / 5%);
+}
+
+.dark {
+  --background: oklch(0.155 0.008 260);
+  --foreground: oklch(0.96 0.004 255);
+  --card: oklch(0.2 0.009 260);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.22 0.01 260);
+  --popover-foreground: var(--foreground);
+
+  /* teal-400 with dark text: 9:1 contrast */
+  --primary: oklch(0.777 0.152 181.9);
+  --primary-foreground: oklch(0.2 0.03 190);
+  --brand-soft: oklch(0.777 0.152 181.9 / 12%);
+
+  --secondary: oklch(0.26 0.01 260);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.26 0.01 260);
+  --muted-foreground: oklch(0.7 0.015 257);
+  --accent: oklch(0.26 0.01 260);
+  --accent-foreground: var(--foreground);
+
+  --positive: oklch(0.78 0.17 152);
+  --negative: oklch(0.72 0.17 22);
+  --warning: oklch(0.8 0.15 80);
+  --destructive: oklch(0.704 0.191 22.216);
+
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.7 0.13 182);
+
+  --chart-1: oklch(0.75 0.13 182);
+  --chart-2: oklch(0.7 0.15 255);
+  --chart-3: oklch(0.82 0.15 80);
+  --chart-4: oklch(0.72 0.18 15);
+  --chart-5: oklch(0.7 0.17 300);
+
+  --sidebar: oklch(0.175 0.009 260);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--brand-soft);
+  --sidebar-accent-foreground: var(--primary);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  /* Same hues stepped for the dark card (#14161a), validated separately. */
+  --viz-spend: #3987e5;
+  --viz-income: #199e70;
+  --viz-dim: oklch(0.32 0.01 260);
+  --viz-grid: oklch(1 0 0 / 7%);
+  --viz-axis: oklch(1 0 0 / 18%);
+
+  --shadow-card: 0 0 0 1px oklch(1 0 0 / 2%);
+  --shadow-card-hover: 0 8px 24px oklch(0 0 0 / 35%);
+}
+
+@theme inline {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: var(--font-sans);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-viz-spend: var(--viz-spend);
+  --color-viz-income: var(--viz-income);
+  --color-viz-dim: var(--viz-dim);
+  --color-viz-grid: var(--viz-grid);
+  --color-viz-axis: var(--viz-axis);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans antialiased;
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
