@@ -10,7 +10,7 @@ export function registerServiceWorker() {
     onNeedRefresh() {
       toast('A new version of Expenses is ready', {
         description: 'Reload to update. Your data is not affected.',
-        action: { label: 'Reload', onClick: () => void update(true) },
+        action: { label: 'Reload', onClick: () => startUpdate(() => update(true)) },
         duration: Infinity,
       })
     },
@@ -18,6 +18,42 @@ export function registerServiceWorker() {
       toast.success('Ready to work offline')
     },
   })
+}
+
+// ---------- Update screen ----------
+
+/** Set while an update is under way; survives the reload so the new page keeps saying "Updating…". */
+const UPDATING = 'expenses.updating'
+/** If the new version hasn't taken over by then, reload anyway (it's already downloaded). */
+const UPDATE_FALLBACK_MS = 15_000
+
+let updating = false
+const updatingListeners = new Set<() => void>()
+
+export const isUpdating = () => updating
+export function subscribeUpdating(fn: () => void) {
+  updatingListeners.add(fn)
+  return () => updatingListeners.delete(fn)
+}
+
+/** Show the "Updating…" screen right away, then switch to the new version (which reloads the page). */
+function startUpdate(apply: () => Promise<void>) {
+  try {
+    sessionStorage.setItem(UPDATING, '1')
+  } catch {}
+  document.documentElement.setAttribute('data-updating', '')
+  updating = true
+  updatingListeners.forEach((l) => l())
+  void apply().catch(() => location.reload())
+  setTimeout(() => location.reload(), UPDATE_FALLBACK_MS)
+}
+
+/** Called once the app has opened: the update (if any) is done, so the loading screen goes back to "Opening…". */
+export function finishUpdate() {
+  try {
+    sessionStorage.removeItem(UPDATING)
+  } catch {}
+  document.documentElement.removeAttribute('data-updating')
 }
 
 // ---------- Install ----------

@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router'
 import { AuthGate } from '@/components/AuthGate'
+import { UpdateOverlay } from '@/components/Splash'
 import { ThemeProvider } from '@/components/theme'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -43,6 +44,7 @@ createRoot(document.getElementById('root')!).render(
             <RouterProvider router={router} />
           </AuthGate>
           <Toaster position="top-center" richColors closeButton />
+          <UpdateOverlay />
         </TooltipProvider>
       </MotionConfig>
     </ThemeProvider>

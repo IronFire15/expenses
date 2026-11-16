@@ -1,8 +1,10 @@
 import { AlertTriangle, Loader2, LogIn, RefreshCw, ShieldCheck, Wallet, WifiOff } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect, useState, type ReactNode } from 'react'
+import { Splash } from '@/components/Splash'
 import { Button } from '@/components/ui/button'
 import { EASE_OUT } from '@/lib/motion'
+import { finishUpdate } from '@/pwa'
 import { AUTH_ERRORS, googleAccount, ServerUnavailableError } from '@/sync/account'
 import { NeedsAuthError } from '@/sync/drive'
 
@@ -57,6 +59,7 @@ export function AuthGate({ children, onReady }: { children: ReactNode; onReady: 
       if (!alive) return
       setState(s)
       cleanAddress()
+      finishUpdate()
     })
     return () => {
       alive = false
@@ -68,7 +71,7 @@ export function AuthGate({ children, onReady }: { children: ReactNode; onReady: 
   }, [state.kind, onReady])
 
   if (state.kind === 'in') return children
-  if (state.kind === 'checking') return <div className="min-h-dvh bg-background" aria-busy="true" />
+  if (state.kind === 'checking') return <Splash />
 
   const signIn = () => {
     setLeaving(true)

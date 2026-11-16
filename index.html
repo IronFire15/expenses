@@ -11,9 +11,43 @@
     <meta name="description" content="Personal money tracker" />
     <title>Expenses</title>
     <script src="/theme-init.js"></script>
+    <!--
+      Loading screen, shown before the app's code runs, while it checks your sign-in, and during an update
+      (theme-init.js sets data-updating). Plain CSS here so it paints instantly, also offline.
+      src/components/Splash.tsx renders the same markup.
+    -->
+    <style>
+      html { background: #f9fafb; color: #1f2937; }
+      html.dark { background: #111318; color: #e5e7eb; }
+      .splash { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: inherit; }
+      .splash-overlay { position: fixed; inset: 0; z-index: 2147483647; background: #f9fafb; }
+      html.dark .splash-overlay { background: #111318; }
+      .splash-logo { width: 64px; height: 64px; margin-bottom: 8px; }
+      .splash-spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid rgba(15, 118, 110, 0.2); border-top-color: #0f766e; animation: splash-spin 0.8s linear infinite; }
+      html.dark .splash-spinner { border-color: rgba(45, 212, 191, 0.2); border-top-color: #2dd4bf; }
+      .splash-title { margin: 4px 0 0; font-size: 17px; font-weight: 600; }
+      .splash-note { margin: 0; max-width: 300px; font-size: 14px; line-height: 1.45; color: #6b7280; }
+      html.dark .splash-note { color: #9ca3af; }
+      html:not([data-updating]) .splash-when-updating, html[data-updating] .splash-when-loading { display: none; }
+      @keyframes splash-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .splash-spinner { animation-duration: 2.4s; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="splash" role="status" aria-live="polite">
+        <svg class="splash-logo" viewBox="0 0 512 512" aria-hidden="true">
+          <rect width="512" height="512" rx="112" fill="#0f766e" />
+          <rect x="104" y="160" width="304" height="208" rx="36" fill="none" stroke="#fff" stroke-width="32" />
+          <path d="M104 216h304" stroke="#fff" stroke-width="32" />
+          <circle cx="340" cy="296" r="22" fill="#fff" />
+        </svg>
+        <div class="splash-spinner" aria-hidden="true"></div>
+        <p class="splash-title splash-when-loading">Opening Expenses…</p>
+        <p class="splash-title splash-when-updating">Updating Expenses…</p>
+        <p class="splash-note splash-when-updating">Don’t close the app. This takes a few seconds, and your data is safe.</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

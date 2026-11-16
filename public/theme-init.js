@@ -17,3 +17,10 @@
     if (dark) document.documentElement.classList.add('dark')
   } catch {}
 })()
+
+// 3. An update is under way (you tapped Reload): the loading screen says "Updating…" until the app is open.
+;(function () {
+  try {
+    if (sessionStorage.getItem('expenses.updating')) document.documentElement.setAttribute('data-updating', '')
+  } catch {}
+})()
