@@ -5,19 +5,47 @@ import { registerSW } from 'virtual:pwa-register'
  * Service worker: makes the app work offline and installable.
  * New versions wait for a tap on "Reload" instead of swapping code under you mid-edit.
  */
+let applyUpdate: ((reload?: boolean) => Promise<void>) | null = null
+let registration: ServiceWorkerRegistration | undefined
+let updateReady = false
+
+function showUpdateToast() {
+  toast('A new version of Expenses is ready', {
+    id: 'app-update',
+    description: 'Reload to update. Your data is not affected.',
+    action: { label: 'Reload', onClick: () => startUpdate(() => applyUpdate!(true)) },
+    duration: Infinity,
+  })
+}
+
 export function registerServiceWorker() {
-  const update = registerSW({
+  applyUpdate = registerSW({
     onNeedRefresh() {
-      toast('A new version of Expenses is ready', {
-        description: 'Reload to update. Your data is not affected.',
-        action: { label: 'Reload', onClick: () => startUpdate(() => update(true)) },
-        duration: Infinity,
-      })
+      updateReady = true
+      showUpdateToast()
     },
     onOfflineReady() {
       toast.success('Ready to work offline')
     },
+    onRegisteredSW(_url, reg) {
+      registration = reg
+    },
   })
+}
+
+/**
+ * Ask the server for a newer version now (Settings → App version).
+ * 'update': one is ready or downloading (the Reload toast shows when it's ready);
+ * 'latest': this is the newest; 'unavailable': no service worker here (development, or an old browser).
+ */
+export async function checkForUpdate(): Promise<'update' | 'latest' | 'unavailable'> {
+  if (updateReady) {
+    showUpdateToast()
+    return 'update'
+  }
+  if (!registration) return 'unavailable'
+  await registration.update()
+  return registration.installing || registration.waiting ? 'update' : 'latest'
 }
 
 // ---------- Update screen ----------

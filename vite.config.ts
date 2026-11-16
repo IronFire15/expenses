@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import { execSync } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
@@ -63,10 +64,26 @@ function hostingHeaders(): Plugin {
   }
 }
 
+/** Which code this build came from, shown in Settings → App version. */
+function gitInfo() {
+  const git = (cmd: string) => execSync(`git ${cmd}`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+  try {
+    return { commit: git('rev-parse --short HEAD'), dirty: git('status --porcelain --untracked-files=no') !== '' }
+  } catch {
+    return { commit: 'unknown', dirty: false }
+  }
+}
+const BUILD = { ...gitInfo(), builtAt: new Date().toISOString() }
+
 /** The sign-in service (Pages Functions) runs separately in development: `npm run dev:api` on :8788. */
 const API_PROXY = { '/api': { target: 'http://localhost:8788', changeOrigin: false } }
 
 export default defineConfig({
+  define: {
+    __APP_COMMIT__: JSON.stringify(BUILD.commit),
+    __APP_DIRTY__: JSON.stringify(BUILD.dirty),
+    __APP_BUILT_AT__: JSON.stringify(BUILD.builtAt),
+  },
   server: { proxy: API_PROXY },
   // `npm run preview` serves the production build with the same headers as the real host.
   preview: { headers: SECURITY_HEADERS, proxy: API_PROXY },

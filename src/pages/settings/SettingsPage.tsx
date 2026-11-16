@@ -1,4 +1,4 @@
-import { AppWindow, Cloud, DatabaseBackup, HardDrive, Palette, Trash2, UserRound, type LucideIcon } from 'lucide-react'
+import { AppWindow, Cloud, DatabaseBackup, HardDrive, Info, Palette, Trash2, UserRound, type LucideIcon } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Stagger, StaggerItem } from '@/components/motion'
 import { PageHeader, Surface } from '@/components/page'
@@ -10,6 +10,7 @@ import { BackupCard } from './BackupCard'
 import { ClearDataCard } from './ClearDataCard'
 import { InstallCard } from './InstallCard'
 import { SyncCard } from './SyncCard'
+import { VersionCard } from './VersionCard'
 
 function useStorageEstimate() {
   const [usage, setUsage] = useState<string>()
@@ -96,6 +97,11 @@ export function SettingsPage() {
               <Row label="Number format">{DEFAULT_LOCALE}</Row>
               <Row label="Storage used">{usage ?? '…'}</Row>
             </dl>
+          </Section>
+        </StaggerItem>
+        <StaggerItem className="min-w-0 lg:col-span-2">
+          <Section icon={Info} title="App version" description="Which version this device is running.">
+            <VersionCard />
           </Section>
         </StaggerItem>
         <StaggerItem className="min-w-0 lg:col-span-2">
