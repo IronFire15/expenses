@@ -5,7 +5,7 @@ Runs on Mac, Windows and mobile from **one codebase**, synced through **one file
 
 ---
 
-## Status (read this first) · updated 2026-11-13
+## Status (read this first) · updated 2026-11-16
 
 **Done:** phases 0–6 and 4b. Live at https://expenses-io.pages.dev (Google sign-in, approved accounts only).
 
@@ -15,9 +15,14 @@ Runs on Mac, Windows and mobile from **one codebase**, synced through **one file
 3. ✅ Phase 5 (2026-11-13): budgets, recurring detection, tags, split transactions, CSV/Excel export.
 4. ✅ Phase 4b (2026-11-13): Google sign-in in the app replaces Cloudflare Access; one sign-in per device, Drive tokens renewed by the server part (`server/auth.ts`). Allow-list: `ALLOWED_EMAILS` secret. Local dev: `npm run dev` + `npm run dev:api`.
 4c. ✅ (2026-11-13, deployed a0ed4375) Add transactions by hand (Transactions → Add). A later import matches them (same account + amount, dates ≤ 5 days apart) and fills in the bank's details instead of adding a duplicate; undoing that import restores what you typed. Hand-typed ones can be edited/deleted. New Rules tab (Categories → Rules): search, edit, delete with Undo.
+4d. ✅ (2026-11-16, live deployment `a4851130`) Settings additions:
+   - **Clear all data** (`src/db/clear.ts`, `ClearDataCard.tsx`): type-DELETE confirm, "can't be undone" warning. Wipes every record to a bare tombstone, reseeds default categories/rules; with sync on, uploads the empty state, then deletes old Drive revisions + weekly backups (`sync.purge` flag; retried after the next good sync if offline). Real-Drive purge not yet exercised.
+   - **Loading screen** instead of black (`index.html` splash + `src/components/Splash.tsx`): while the app loads, while it checks sign-in, and "Updating Expenses… Don't close the app" after tapping Reload (flag in sessionStorage, forced reload after 15 s). Not yet seen during a real update on the phone.
+   - **App version** (`VersionCard.tsx`): git commit + build time (from `vite.config.ts` `define`), "Check for updates" button (`checkForUpdate` in `src/pwa.ts`). Not yet tested on the live site.
+   - `npm run deploy` now passes `--branch main` (git branch is `master`; without it Cloudflare made a preview, not production).
 5. **You (optional):** phone: open the live site → sign in → passphrase → Add to Home Screen.
 6. Phase 7: more banks when you add samples (CSV/Excel mapping too). Excel import needs SheetJS (install was blocked by the permission check; approve it then).
-7. Git: first commit `bbcd8fb` on `master`; remote `origin` = https://github.com/IronFire15/expenses.git (empty). **Push not done:** this Mac isn't signed in to GitHub (`gh` not logged in, SSH key rejected). You: run `gh auth login` (GitHub.com → HTTPS → web browser), then `gh auth setup-git` and `git push -u origin master`.
+7. Git: all work committed on `master` (latest `c537acf`); remote `origin` = https://github.com/IronFire15/expenses.git (empty). **Push not done** (re-checked 2026-11-16): this Mac isn't signed in to GitHub (`gh auth status`: not logged in; no `~/.config/gh`). You: run `gh auth login` (GitHub.com → HTTPS → web browser) in this Mac's terminal, then `gh auth setup-git` and `git push -u origin master`.
 8. **Waiting on your choice: share with friends without typing their emails.** Each friend gets their own separate, encrypted data in their own Drive; nobody sees anyone else's.
    - **A (recommended, ~1 h):** a secret invite link (`/?invite=<code>`). Opening it lets any Google account sign in; the "invited" flag lives inside the encrypted session cookie (no database). Change the code to retire a leaked link; rotate `SESSION_SECRET` to sign everyone out. A new device needs the link again.
    - **B (~15 min):** open to any Google account (no allow-list). Strangers can use it too; no way to block one person.
