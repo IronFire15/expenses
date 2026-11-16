@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "deploy": "npm run build && npx wrangler@4 pages deploy dist --project-name ${CF_PAGES_PROJECT:-expenses-io} --commit-dirty=true && node scripts/clean-deployments.mjs ${CF_PAGES_PROJECT:-expenses-io}"
+    "deploy": "npm run build && npx wrangler@4 pages deploy dist --project-name ${CF_PAGES_PROJECT:-expenses-io} --branch main --commit-dirty=true && node scripts/clean-deployments.mjs ${CF_PAGES_PROJECT:-expenses-io}"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
