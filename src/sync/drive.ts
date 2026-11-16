@@ -34,6 +34,8 @@ export interface DriveApi {
   writeBackup(name: string, content: string): Promise<void>
   listBackups(): Promise<BackupFile[]>
   deleteFile(id: string): Promise<void>
+  /** Delete every earlier version Drive keeps of a file, leaving only the current one. */
+  deleteOldRevisions(id: string): Promise<void>
 }
 
 export class ConflictError extends Error {
@@ -169,5 +171,12 @@ export class GoogleDrive implements DriveApi {
 
   async deleteFile(id: string) {
     await this.call(`https://www.googleapis.com/drive/v3/files/${id}`, { method: 'DELETE' })
+  }
+
+  async deleteOldRevisions(id: string) {
+    const res = await this.call(`https://www.googleapis.com/drive/v3/files/${id}/revisions?${new URLSearchParams({ fields: 'revisions(id)', pageSize: '1000' })}`)
+    const { revisions } = (await res.json()) as { revisions: { id: string }[] }
+    // Listed oldest first; the last one is the current content and can't be deleted.
+    for (const r of revisions.slice(0, -1)) await this.call(`https://www.googleapis.com/drive/v3/files/${id}/revisions/${r.id}`, { method: 'DELETE' })
   }
 }

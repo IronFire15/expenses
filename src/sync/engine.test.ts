@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { ExpensesDB } from '@/db/db'
 import { listActive, makeRecord, softDelete, updateRecord } from '@/db/records'
 import { seedDefaults } from '@/db/seed'
-import type { Transaction } from '@/db/types'
+import type { Category, Transaction } from '@/db/types'
 import { WrongPassphraseError } from './crypto'
 import { ConflictError, NeedsAuthError, type BackupFile, type DriveApi, type RemoteFile } from './drive'
 import { SyncEngine, type AuthLike } from './engine'
@@ -56,6 +56,10 @@ class FakeDrive implements DriveApi {
   }
   async deleteFile(id: string) {
     this.backups = this.backups.filter((b) => b.id !== id)
+  }
+  revisionPurges = 0
+  async deleteOldRevisions() {
+    this.revisionPurges++
   }
 }
 
@@ -188,6 +192,43 @@ describe('sync between two devices', () => {
       expect(await d.db.transactions.get('fromA')).toBeDefined()
       expect(await d.db.transactions.get('fromB')).toBeDefined()
     }
+  })
+
+  it('clear all data erases every device and the Drive history, keeping fresh defaults', async () => {
+    await A.db.transactions.add(tx({ id: 't1' }))
+    await A.db.categories.add(makeRecord<Category>({ id: 'mine', name: 'Mine', type: 'expense', color: '#000', icon: 'x' }))
+    await updateRecord(A.db.categories, 'cat-groceries', { name: 'Food' })
+    await setUp(A)
+    await setUp(B)
+    expect(drive.backups.length).toBeGreaterThan(0)
+
+    clock = Date.now() + 10_000
+    expect(await A.engine.clearAllData()).toBe('synced')
+    expect(drive.revisionPurges).toBe(1)
+    expect(drive.backups).toEqual([])
+
+    await B.engine.syncNow()
+    for (const d of [A, B]) {
+      expect(await d.db.transactions.get('t1')).toEqual({ id: 't1', updatedAt: clock, deleted: true }) // no content left
+      expect(await listActive(d.db.transactions)).toEqual([])
+      expect((await d.db.categories.get('mine'))?.deleted).toBe(true)
+      expect((await d.db.categories.get('cat-groceries'))?.name).toBe('Groceries')
+      expect((await listActive(d.db.rules)).length).toBeGreaterThan(50)
+    }
+  })
+
+  it('clear all data with sync off only touches this device, and cleans Drive once sync is back', async () => {
+    await A.db.transactions.add(tx({ id: 't1' }))
+    await setUp(A)
+    await A.engine.disconnect()
+    clock = Date.now() + 10_000
+    expect(await A.engine.clearAllData()).toBe('local')
+    expect(drive.revisionPurges).toBe(0)
+
+    await setUp(A)
+    expect(drive.revisionPurges).toBe(1)
+    await setUp(B)
+    expect(await listActive(B.db.transactions)).toEqual([])
   })
 
   it('does not upload when nothing changed', async () => {

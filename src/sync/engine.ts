@@ -1,3 +1,4 @@
+import { clearAllData } from '@/db/clear'
 import type { ExpensesDB } from '@/db/db'
 import { SYNCED_TABLES } from '@/db/db'
 import { recategorizeAll } from '@/rules/engine'
@@ -41,6 +42,8 @@ const META = {
   key: 'sync.key',
   lastSyncedAt: 'sync.lastSyncedAt',
   lastBackupAt: 'sync.lastBackupAt',
+  /** Set by "Clear all data": after the next successful sync, delete old versions of the Drive file and all backups. */
+  purge: 'sync.purge',
 } as const
 
 const BACKUP_EVERY_MS = 7 * 86_400_000
@@ -176,6 +179,34 @@ export class SyncEngine {
     this.set({ state: 'disconnected' })
   }
 
+  /**
+   * Erase all data on this device, then in Google Drive: the next sync uploads the empty state
+   * (other devices erase theirs when they sync), then deletes the old versions Drive keeps and the weekly backups.
+   * Returns 'synced' when Drive is clean, 'pending' when that waits for the next successful sync,
+   * 'local' when sync is off here (Drive is cleaned the next time sync is turned on).
+   */
+  async clearAllData(): Promise<'synced' | 'pending' | 'local'> {
+    if (this.timer) clearTimeout(this.timer)
+    // Let a sync already under way finish first, so the purge can't run before the empty state is uploaded.
+    await this.running
+    await this.setMeta(META.purge, true)
+    await clearAllData(this.db, this.now())
+    if (!this.key) return 'local'
+    await this.syncNow()
+    return (await this.meta<boolean>(META.purge)) ? 'pending' : 'synced'
+  }
+
+  private async purgeHistory(drive: DriveApi) {
+    try {
+      const file = await drive.findSyncFile()
+      if (file) await drive.deleteOldRevisions(file.id)
+      for (const b of await drive.listBackups()) await drive.deleteFile(b.id)
+      await this.setMeta(META.purge, undefined)
+    } catch (err) {
+      console.warn('Deleting old Drive copies failed; will retry next sync.', err)
+    }
+  }
+
   // ---------- triggers ----------
 
   private attachHooks() {
@@ -226,6 +257,7 @@ export class SyncEngine {
     this.set({ state: 'syncing', lastSyncedAt: this.lastSyncedAt })
     try {
       await this.exchange()
+      if (await this.meta<boolean>(META.purge)) await this.purgeHistory(this.drive!)
       this.lastSyncedAt = this.now()
       await this.setMeta(META.lastSyncedAt, this.lastSyncedAt)
       this.set({ state: 'idle', lastSyncedAt: this.lastSyncedAt })

@@ -100,9 +100,13 @@ const RETIRED_RULE_IDS = [
  * Adds any default category or rule whose id doesn't exist yet, and retires replaced defaults.
  * Safe on every app start. Deleted defaults stay deleted: their tombstone still exists, so they're not re-added.
  */
+export function defaultCategories(now = 0): Category[] {
+  return DEFAULT_CATEGORIES.map(([id, name, type, color, icon]) => makeRecord<Category>({ id, name, type, color, icon }, now))
+}
+
 export async function seedDefaults(db: ExpensesDB): Promise<number> {
   return db.transaction('rw', db.categories, db.rules, async () => {
-    const categories = DEFAULT_CATEGORIES.map(([id, name, type, color, icon]) => makeRecord<Category>({ id, name, type, color, icon }, 0))
+    const categories = defaultCategories()
     const haveCats = new Set(await db.categories.toCollection().primaryKeys())
     const haveRules = new Set(await db.rules.toCollection().primaryKeys())
     const newCats = categories.filter((c) => !haveCats.has(c.id))

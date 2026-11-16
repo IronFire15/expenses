@@ -1,11 +1,13 @@
-import { AppWindow, Cloud, DatabaseBackup, HardDrive, Palette, UserRound, type LucideIcon } from 'lucide-react'
+import { AppWindow, Cloud, DatabaseBackup, HardDrive, Palette, Trash2, UserRound, type LucideIcon } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Stagger, StaggerItem } from '@/components/motion'
 import { PageHeader, Surface } from '@/components/page'
 import { ThemeSwitcher } from '@/components/theme'
 import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/lib/money'
+import { cn } from '@/lib/utils'
 import { AccountCard } from './AccountCard'
 import { BackupCard } from './BackupCard'
+import { ClearDataCard } from './ClearDataCard'
 import { InstallCard } from './InstallCard'
 import { SyncCard } from './SyncCard'
 
@@ -17,11 +19,23 @@ function useStorageEstimate() {
   return usage
 }
 
-function Section({ icon: Icon, title, description, children }: { icon: LucideIcon; title: string; description: string; children: ReactNode }) {
+function Section({
+  icon: Icon,
+  title,
+  description,
+  tone,
+  children,
+}: {
+  icon: LucideIcon
+  title: string
+  description: string
+  tone?: 'danger'
+  children: ReactNode
+}) {
   return (
-    <Surface className="h-full p-5">
+    <Surface className={cn('h-full p-5', tone === 'danger' && 'border-destructive/30')}>
       <div className="mb-4 flex items-start gap-3">
-        <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-primary">
+        <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg', tone === 'danger' ? 'bg-destructive/10 text-destructive' : 'bg-brand-soft text-primary')}>
           <Icon className="size-4.5" aria-hidden />
         </span>
         <div>
@@ -82,6 +96,11 @@ export function SettingsPage() {
               <Row label="Number format">{DEFAULT_LOCALE}</Row>
               <Row label="Storage used">{usage ?? '…'}</Row>
             </dl>
+          </Section>
+        </StaggerItem>
+        <StaggerItem className="min-w-0 lg:col-span-2">
+          <Section icon={Trash2} title="Clear all data" description="Start over from scratch." tone="danger">
+            <ClearDataCard />
           </Section>
         </StaggerItem>
       </Stagger>
